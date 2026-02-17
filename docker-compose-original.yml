@@ -1,0 +1,58 @@
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────
+  db:
+    image: postgres:17
+    container_name: aiandreia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aiandreia
+      POSTGRES_USER: msansone
+      POSTGRES_PASSWORD: senha
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U msansone -d aiandreia" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Ollama AI Engine ────────────────────────────────────────
+  ollama:
+    image: ollama/ollama
+    container_name: aiandreia-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:11434/ || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── AiAndreia Application ──────────────────────────────────
+  app:
+    build: .
+    container_name: aiandreia-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Override application.properties via Spring relaxed binding
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/aiandreia
+      SPRING_DATASOURCE_USERNAME: msansone
+      SPRING_DATASOURCE_PASSWORD: senha
+      OLLAMA_API_URL: http://ollama:11434
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  ollama_data:

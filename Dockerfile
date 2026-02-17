@@ -1,18 +1,13 @@
-# ==============================================================
-# Stage 1 — Build
-# ==============================================================
-FROM eclipse-temurin:21-jdk AS build
-
+# Estágio 1: Compilação (Build)
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+# Copia apenas o pom.xml para baixar as dependências (cache)
+COPY pom.xml .
+RUN mvn dependency:go-offline
+# Copia o código fonte e gera o jar
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy Maven wrapper & POM first (layer-caching for dependencies)
-COPY .mvn/ .mvn/
-COPY mvnw pom.xml ./
-RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
-
-# Copy source and build the fat JAR
-COPY src/ src/
-RUN ./mvnw package -DskipTests -B
 
 # ==============================================================
 # Stage 2 — Runtime
