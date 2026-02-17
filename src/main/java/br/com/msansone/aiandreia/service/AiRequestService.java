@@ -27,20 +27,26 @@ public class AiRequestService {
         User user = userRepository.findById(requestDTO.userId())
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + requestDTO.userId()));
 
-        // Load user's conversation history
-        List<AiRequest> history = aiRequestRepository.findByUserIdOrderByCreatedAtAsc(user.getId());
-
-        // Build messages array with history + current question
+        // Build messages with context
         List<OllamaChatMessage> messages = new ArrayList<>();
-        for (AiRequest past : history) {
-            messages.add(new OllamaChatMessage("user", past.getQuestion()));
-            if (past.getAnswer() != null) {
-                messages.add(new OllamaChatMessage("assistant", past.getAnswer()));
+
+        if (user.getResumo() != null && !user.getResumo().isBlank()) {
+            // Use summary instead of full history to reduce tokens
+            messages.add(new OllamaChatMessage("system",
+                    "Resumo do contexto das conversas anteriores do usuário:\n" + user.getResumo()));
+        } else {
+            // No summary yet, fall back to full history
+            List<AiRequest> history = aiRequestRepository.findByUserIdOrderByCreatedAtAsc(user.getId());
+            for (AiRequest past : history) {
+                messages.add(new OllamaChatMessage("user", past.getQuestion()));
+                if (past.getAnswer() != null) {
+                    messages.add(new OllamaChatMessage("assistant", past.getAnswer()));
+                }
             }
         }
         messages.add(new OllamaChatMessage("user", requestDTO.question()));
 
-        // Send to Ollama with full history context
+        // Send to Ollama with context
         String answer = ollamaClient.chatWithHistory(requestDTO.model(), messages);
 
         // Save the new request with user association

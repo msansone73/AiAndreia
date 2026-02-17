@@ -61,4 +61,10 @@ public class UserController {
         userService.resetUserHistory(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/resumir")
+    public ResponseEntity<String> summarizeUserHistory(@PathVariable Long id) {
+        String resumo = userService.summarizeUserHistory(id);
+        return ResponseEntity.ok(resumo);
+    }
 }
