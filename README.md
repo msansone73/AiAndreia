@@ -85,6 +85,39 @@ The server starts on **port 8080** by default.
 
 ---
 
+## 🐳 Docker
+
+The project includes a `Dockerfile` and `docker-compose.yml` to run the **application + PostgreSQL + Ollama** with a single command.
+
+### Quick Start
+
+```bash
+# Build and start all services
+docker compose up -d
+
+# Check that everything is running
+docker compose ps
+
+# View application logs
+docker compose logs -f app
+
+# Stop all services
+docker compose down
+```
+
+The compose file exposes:
+
+| Service | URL |
+|---|---|
+| AiAndreia API | `http://localhost:8080` |
+| PostgreSQL | `localhost:5432` |
+| Ollama | `http://localhost:11434` |
+
+> [!TIP]
+> Database data and Ollama models are persisted in Docker volumes (`pgdata` and `ollama_data`). To start fresh, run `docker compose down -v`.
+
+---
+
 ## 🔌 API Endpoints
 
 Base URL: `http://localhost:8080/aiandreia`
