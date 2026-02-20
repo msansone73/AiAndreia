@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.JdbcTypeCode;
+
 @Entity
 @Table(name = "tb_user")
 @Data
@@ -39,5 +41,6 @@ public class User {
     private LocalDateTime createdAt;
 
     @Column(length = 10000)
+    @JdbcTypeCode(java.sql.Types.VARCHAR)
     private String resumo;
 }

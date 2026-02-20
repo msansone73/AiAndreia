@@ -95,9 +95,9 @@ public class UserService {
 
         // Ask Ollama to summarize
         String model = history.get(0).getModel();
-        String prompt = "Faça um resumo compacto do seguinte histórico de conversas entre um usuário e uma IA. "
-                + "O resumo deve preservar os pontos principais, decisões tomadas e contexto relevante, "
-                + "mas de forma muito mais curta para economizar tokens em futuras interações.\n\n"
+        String prompt = "Faça um resumo das perguntas do usuário, "
+                + "O resumo deve preservar os pontos principais, nenhuma informação deverá ser perdida, "
+                + "eliminar repetição de informação para economizar tokens em futuras interações.\n\n"
                 + sb.toString();
 
         String resumo = ollamaClient.chat(model, prompt);
