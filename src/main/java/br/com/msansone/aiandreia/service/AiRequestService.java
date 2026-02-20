@@ -7,11 +7,13 @@ import br.com.msansone.aiandreia.entity.User;
 import br.com.msansone.aiandreia.integration.OllamaClient;
 import br.com.msansone.aiandreia.integration.dto.OllamaChatMessage;
 import br.com.msansone.aiandreia.repository.AiRequestRepository;
+import br.com.msansone.aiandreia.repository.SettingRepository;
 import br.com.msansone.aiandreia.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class AiRequestService {
 
     private final AiRequestRepository aiRequestRepository;
     private final UserRepository userRepository;
+    private final SettingRepository settingRepository;
     private final OllamaClient ollamaClient;
 
     public AiResponseDTO processRequest(AiRequestDTO requestDTO) {
@@ -44,6 +47,18 @@ public class AiRequestService {
                 }
             }
         }
+
+        settingRepository.findByKey("header").ifPresent(setting -> {
+            if (setting.getValue() != null && !setting.getValue().isBlank()) {
+                String headerValue = setting.getValue();
+                if (headerValue.contains("<date>")) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+                    headerValue = headerValue.replace("<date>", LocalDateTime.now().format(formatter));
+                }
+                messages.add(new OllamaChatMessage("system", headerValue));
+            }
+        });
+
         messages.add(new OllamaChatMessage("user", requestDTO.question()));
 
         // Send to Ollama with context
