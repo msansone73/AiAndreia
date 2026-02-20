@@ -88,11 +88,9 @@ public class UserService {
         // Build full conversation text
         StringBuilder sb = new StringBuilder();
         for (AiRequest req : history) {
-            sb.append("Pergunta: ").append(req.getQuestion()).append("\n");
-            if (req.getAnswer() != null) {
-                sb.append("Resposta: ").append(req.getAnswer()).append("\n");
+            if (req.getQuestion() != null) {
+                sb.append("Pergunta: ").append(req.getQuestion()).append("\n");
             }
-            sb.append("\n");
         }
 
         // Ask Ollama to summarize
